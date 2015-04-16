@@ -1,5 +1,11 @@
 package rocks.teammolise.eyesleep.ui;
 
+import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -9,6 +15,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -19,12 +26,20 @@ import rocks.teammolise.eyesleep.utils.Utils;
 
 public class CoveringPanel extends JFrame {
 	private static final long serialVersionUID = 7318202214125494619L;
+
+	private static final Color BG = new Color(0f, 0f, 0f, .3f);
+
+	private static final Color FG_TEXT = new Color(.9f, .9f, .9f, 1f);
+
+	private static final Font MSG_FONT = new Font("Helvetica", Font.PLAIN, 20);
 	
 	private boolean skipped;
 	private int secondsToLive;
 	private int targetSecond;
 	
-	private JPanel panel;
+	private JPanel centeredPanel;
+	private JPanel rootPanel;
+	private JPanel shadowPanel;
 	private JButton skip;
 	private JLabel label;
 	private JLabel warningLabel;
@@ -37,7 +52,8 @@ public class CoveringPanel extends JFrame {
 		this.setUndecorated(true);
 		this.setResizable(false);
 		
-		this.setSize(Toolkit.getDefaultToolkit().getScreenSize().width, Toolkit.getDefaultToolkit().getScreenSize().height*4);
+		this.setSize(Toolkit.getDefaultToolkit().getScreenSize().width, Toolkit.getDefaultToolkit().getScreenSize().height);
+		this.setLocationRelativeTo(null);
 		
 		this.secondsToLive = pTimeToLive;
 		this.skipped = false;
@@ -49,27 +65,78 @@ public class CoveringPanel extends JFrame {
 	}
 	
 	private void initGraphics(int skipsLeft) {
-		this.panel = new JPanel();
+		double ratio = 1d/2d;
+		Dimension shadowPanelDimension = new Dimension();
+		shadowPanelDimension.width = (int) (Toolkit.getDefaultToolkit().getScreenSize().width * ratio);
+		shadowPanelDimension.height = (int) (Toolkit.getDefaultToolkit().getScreenSize().height * ratio);
+		BufferedImage screenshot;
+		try {
+			screenshot = Utils.blurImage(Utils.getScreenshot(), 100);
+			this.rootPanel = new BackgroundPanel(screenshot);
+		} catch (AWTException e) {
+			e.printStackTrace();
+			this.rootPanel = new JPanel();
+		}
+		this.rootPanel.setLayout(new GridBagLayout());
+		this.shadowPanel = new JPanel(new GridBagLayout());
+		this.shadowPanel.setSize(shadowPanelDimension);
+		this.shadowPanel.setPreferredSize(shadowPanelDimension);
+		this.shadowPanel.setBackground(CoveringPanel.BG);
+		
+		this.centeredPanel = new JPanel();
+		VerticalFlowLayout verticalFlowLayout = new VerticalFlowLayout(20, FlowLayout.CENTER);
+		this.centeredPanel.setLayout(verticalFlowLayout);
+		this.centeredPanel.setBackground(CoveringPanel.BG);
+		Dimension centeredPanelDimension = new Dimension((int) (shadowPanelDimension.width*ratio), (int) (shadowPanelDimension.height*ratio));
+		this.centeredPanel.setPreferredSize(centeredPanelDimension);
+		this.centeredPanel.setOpaque(false);
 		
 		SensibleListener listener = new SensibleListener(this);
-		this.panel.addMouseListener(listener);
-		this.panel.addKeyListener(listener);
-		this.panel.addMouseMotionListener(listener);
-		this.add(panel);
+		this.centeredPanel.addMouseListener(listener);
+		this.centeredPanel.addKeyListener(listener);
+		this.centeredPanel.addMouseMotionListener(listener);
 		
+		JPanel textPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		textPanel.setOpaque(false);
 		this.warningLabel = new JLabel();
+		this.warningLabel.setFont(MSG_FONT);
+		this.warningLabel.setForeground(CoveringPanel.FG_TEXT);
+		this.warningLabel.setOpaque(false);
 		this.warningLabel.setSize(this.getSize().width, this.warningLabel.getSize().height);
 		this.warningLabel.setLocation(0, 0);
-		panel.add(warningLabel);
+		textPanel.add(this.warningLabel);
 		
 		this.label = new JLabel(this.secondsToLive + " seconds...");
+		this.label.setFont(MSG_FONT);
+		this.label.setForeground(CoveringPanel.FG_TEXT);
+		this.label.setOpaque(false);
 		this.label.setSize(this.getSize().width, this.label.getSize().height);
 		this.label.setLocation(0, 0);
-		panel.add(label);
+		textPanel.add(this.label);
 		
-		this.skip = new JButton("Skip (" + skipsLeft + " left)");
+		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		buttonsPanel.setOpaque(false);
+		
+		this.skip = Utils.createFlatButton("Skip (" + skipsLeft + " left)");
+		this.skip.setForeground(CoveringPanel.FG_TEXT);
+		this.skip.setOpaque(false);
 		this.skip.setLocation(0, 0);
-		panel.add(skip);
+		buttonsPanel.add(this.skip);
+		
+		JPanel aPanel = new JPanel(new GridBagLayout());
+		aPanel.setOpaque(false);
+		aPanel.setPreferredSize(new Dimension(centeredPanelDimension.width, 100));
+		aPanel.add(textPanel);
+		centeredPanel.add(aPanel);
+		JPanel anotherPanel = new JPanel(new GridBagLayout());
+		anotherPanel.add(buttonsPanel);
+		anotherPanel.setPreferredSize(new Dimension(centeredPanelDimension.width, 100));
+		anotherPanel.setOpaque(false);
+		centeredPanel.add(anotherPanel);
+		
+		this.shadowPanel.add(this.centeredPanel);
+		this.rootPanel.add(this.shadowPanel);
+		this.add(this.rootPanel);
 	}
 	
 	public void startSleeping() {
@@ -108,6 +175,7 @@ public class CoveringPanel extends JFrame {
 	
 	private void updateText(int seconds) {
 		this.label.setText(seconds + " seconds...");
+		this.repaint();
 	}
 	
 	private int getSecondsToLive() {

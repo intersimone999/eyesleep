@@ -8,8 +8,8 @@ import rocks.teammolise.eyesleep.ui.TrayHandler;
 import rocks.teammolise.eyesleep.utils.Utils;
 
 public class Main {
-	public static final int SLEEP_TIME = 20; //Sleep time in seconds
-	public static final int WORK_TIME = 20; //Work time in minutes
+	public static final int SLEEP_TIME = 200; //Sleep time in seconds
+	public static final int WORK_TIME = 0; //Work time in minutes
 	public static final int MOVIE_WORKTIME = 200;
 	public static final int SKIP_WORKTIME = 1; //Work time in minutes until next sleep (when "skip" is pressed)
 	public static final int MAX_SKIPS = 3; //Total number of available skips

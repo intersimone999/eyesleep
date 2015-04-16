@@ -21,10 +21,10 @@ public class TrayHandler {
             return;
 		
         popup = new PopupMenu();
-        trayIcon = new TrayIcon(Utils.loadImage("tray.png", "test"));
+        trayIcon = new TrayIcon(Utils.loadImage("trayTransparentDark.png", "test"));
         trayIcon.setImageAutoSize(true);
         
-        trayIcon = new TrayIcon(Utils.loadImage("tray.png", "test", (int)trayIcon.getSize().getWidth()));
+        trayIcon = new TrayIcon(Utils.loadImage("trayTransparentDark.png", "test", (int)trayIcon.getSize().getWidth()));
         tray = SystemTray.getSystemTray();
        
         // Create a pop-up menu components
