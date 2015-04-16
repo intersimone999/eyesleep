@@ -13,13 +13,14 @@ public class Main {
 	public static final int MOVIE_WORKTIME = 200;
 	public static final int SKIP_WORKTIME = 1; //Work time in minutes until next sleep (when "skip" is pressed)
 	public static final int MAX_SKIPS = 3; //Total number of available skips
+	public static final boolean OPAQUE_ICON = true;
 	
 	protected static int availableSkips = MAX_SKIPS;
 	protected static int targetMinute;
 	protected static TrayHandler tray;
 	public static void main(String[] args) {
 		if (TrayHandler.isSupported()) {
-			tray = new TrayHandler(new MyCallback());
+			tray = new TrayHandler(OPAQUE_ICON, new MyCallback());
 			tray.update(WORK_TIME);
 		}
 		
@@ -32,6 +33,9 @@ public class Main {
 				
 				if (targetMinute - Utils.timeInMinutes() <= 0)
 					targetMinute = Utils.timeInMinutes() + sleep();
+				
+				if (TrayHandler.isSupported())
+					tray.update(targetMinute - Utils.timeInMinutes());
 				
 				Thread.sleep(20000);
 			}

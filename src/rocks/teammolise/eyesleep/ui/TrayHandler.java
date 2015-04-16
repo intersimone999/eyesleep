@@ -16,15 +16,21 @@ public class TrayHandler {
 	private TrayIcon trayIcon;
 	private SystemTray tray;
 	
-	public TrayHandler(final TrayCallback pCallback) {
+	public TrayHandler(boolean pTrayOpaque, final TrayCallback pCallback) {
 		if (!isSupported())
             return;
 		
+		String imagePath;
+		if (pTrayOpaque)
+			imagePath = "tray.png";
+		else
+			imagePath = "trayTransparentDark.png";
+		
         popup = new PopupMenu();
-        trayIcon = new TrayIcon(Utils.loadImage("trayTransparentDark.png", "test"));
+        trayIcon = new TrayIcon(Utils.loadImage(imagePath, "test"));
         trayIcon.setImageAutoSize(true);
         
-        trayIcon = new TrayIcon(Utils.loadImage("trayTransparentDark.png", "test", (int)trayIcon.getSize().getWidth()));
+        trayIcon = new TrayIcon(Utils.loadImage(imagePath, "test", (int)trayIcon.getSize().getWidth()));
         tray = SystemTray.getSystemTray();
        
         // Create a pop-up menu components
