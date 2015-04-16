@@ -1,0 +1,66 @@
+<project name="eyesleep" default="simple" basedir=".">
+
+	<property name="version" value="1.0" />
+	<property name="buildnumber" value="1" />
+
+	<tstamp>
+		<format property="this_year" pattern="yyyy" />
+	</tstamp>
+
+	<property name="copyright" value="Copyright &#xa9; ${this_year} Team Molise" />
+
+	<target name="clean">
+		<delete dir="build" />
+		<delete dir="osx" />
+	</target>
+
+	<target name="compile">
+		<mkdir dir="build/classes" />
+		<javac srcdir="src" destdir="build/classes">
+			<classpath>
+				<pathelement path="libs/Filters.jar" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="jar">
+		<mkdir dir="build/jar" />
+		<copy todir="build/classes/rocks/teammolise/eyesleep/utils/resources">
+			<fileset dir="src/rocks/teammolise/eyesleep/utils/resources">
+				<exclude name="*.java" />
+			</fileset>
+		</copy>
+		<jar destfile="build/jar/eyesleep.jar" basedir="build/classes">
+			<zipgroupfileset dir="libs" includes="Filters.jar" />
+			<manifest>
+				<attribute name="EyeSleep" value="main" />
+				<attribute name="Main-Class" value="rocks.teammolise.eyesleep.runnable.Main" />
+			</manifest>
+		</jar>
+	</target>
+
+	<taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" />
+	<target name="bundleOSX">
+		<mkdir dir="osx" />
+		<bundleapp outputdirectory="osx" name="Eyesleep"
+			displayname="Eyesleep" identifier="rocks.teammolise.eyesleep"
+			shortversion="1.0" applicationCategory="public.app-category.developer-tools"
+			mainclassname="rocks.teammolise.eyesleep.runnable.Main"
+			icon="src/rocks/teammolise/eyesleep/utils/resources/trayTransparentDark.icns">
+			<classpath file="build/jar/eyesleep.jar" />
+			<option value="-Dapple.laf.useScreenMenuBar=true" />
+		</bundleapp>
+		<copy todir="osx/Eyesleep.app/Contents/Resources">
+			<fileset dir="src/rocks/teammolise/eyesleep/utils/resources">
+				<exclude name="*.java" />
+			</fileset>
+		</copy>
+<!-- 		to remove icon from the dock give this cmd in a terminal and then restart the app -->
+<!-- 		defaults write /Applications/Eyesleep.app/Contents/Info LSUIElement -string 1 -->
+	</target>
+
+	<target name="run">
+		<java jar="build/jar/eyesleep.jar" fork="true" />
+	</target>
+
+</project>
