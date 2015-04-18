@@ -1,11 +1,10 @@
 package rocks.teammolise.eyesleep.runnable;
 
-import javax.swing.JOptionPane;
+import java.io.IOException;
 
-import rocks.teammolise.eyesleep.ui.CoveringPanel;
-import rocks.teammolise.eyesleep.ui.TrayCallback;
+import rocks.teammolise.eyesleep.Controller;
+import rocks.teammolise.eyesleep.config.ConfigManager;
 import rocks.teammolise.eyesleep.ui.TrayHandler;
-import rocks.teammolise.eyesleep.utils.Utils;
 
 public class Main {
 	public static final int SLEEP_TIME = 20; //Sleep time in seconds
@@ -13,12 +12,41 @@ public class Main {
 	public static final int MOVIE_WORKTIME = 200;
 	public static final int SKIP_WORKTIME = 1; //Work time in minutes until next sleep (when "skip" is pressed)
 	public static final int MAX_SKIPS = 3; //Total number of available skips
-	public static final boolean OPAQUE_ICON = true;
+	public static final int STYLE = TrayHandler.STYLE_LIGHT;
 	
 	protected static int availableSkips = MAX_SKIPS;
 	protected static int targetMinute;
 	protected static TrayHandler tray;
-	public static void main(String[] args) {
+	
+	public static void main(String[] args) throws InterruptedException {
+		Controller controller;
+		try {
+			ConfigManager config = new ConfigManager();
+			
+			controller = new Controller(config.getSleepTime(), 
+										config.getWorkTime(), 
+										config.getMovieWorktime(), 
+										config.getSkipWorktime(), 
+										config.getMaxSkips());
+			controller.initialize(config.getStyle());
+		} catch (IOException e) {
+			controller = new Controller(SLEEP_TIME, 
+										WORK_TIME, 
+										MOVIE_WORKTIME, 
+										SKIP_WORKTIME, 
+										MAX_SKIPS);
+			controller.initialize(STYLE);
+		}
+		
+		
+		while (true) {
+			if (controller.needRest())
+				controller.sleep();
+			Thread.sleep(20000);
+		}
+	}
+	/*
+	public static void main1(String[] args) {
 		if (TrayHandler.isSupported()) {
 			tray = new TrayHandler(OPAQUE_ICON, new MyCallback());
 			tray.update(WORK_TIME);
@@ -46,6 +74,8 @@ public class Main {
 	
 	public static int sleep() throws InterruptedException {
 		CoveringPanel panel = new CoveringPanel(SLEEP_TIME, availableSkips);
+		Utils.playClip("alarm.wav");
+		Thread.sleep(5000);
 		panel.setVisible(true);
 		panel.startSleeping();
 		while (!panel.isDone()) {
@@ -61,7 +91,10 @@ public class Main {
 		
 		if (skipped) {
 			availableSkips--;
-			return getSkipNewWorktime();
+			if (panel.isWatchingAMovie())
+				return MOVIE_WORKTIME;
+			else
+				return SKIP_WORKTIME;
 		} else {
 			Utils.playClip("ding.wav");
 			availableSkips = MAX_SKIPS;
@@ -101,22 +134,5 @@ public class Main {
 		if (TrayHandler.isSupported())
 			tray.update(MOVIE_WORKTIME);
 	}
-}
-
-class MyCallback implements TrayCallback {
-	@Override
-	public void onExit() {
-		System.exit(0);
-	}
-
-	@Override
-	public void onWatchingMovie() {
-		Main.watchMovie();
-	}
-
-	@Override
-	public void onAbout() {
-		JOptionPane.showMessageDialog(null, "From Molise with ❤️", "Eyesleep", JOptionPane.INFORMATION_MESSAGE);
-	}
-	
+	*/
 }

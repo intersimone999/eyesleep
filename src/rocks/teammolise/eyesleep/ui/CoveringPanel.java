@@ -34,14 +34,20 @@ public class CoveringPanel extends JFrame {
 	private static final Font MSG_FONT = new Font("Helvetica", Font.PLAIN, 20);
 	
 	private boolean skipped;
+	private boolean watchingMovie;
+
 	private int secondsToLive;
 	private int targetSecond;
 	
 	private JPanel centeredPanel;
 	private JPanel rootPanel;
 	private JPanel shadowPanel;
-	private JButton skip;
-	private JLabel label;
+	
+	private JButton skipButton;
+	private JButton watchingMovieButton;
+	private JButton exitButton;
+	
+	private JLabel countdownLabel;
 	private JLabel warningLabel;
 
 	public CoveringPanel(int pTimeToLive, int skipsLeft) {
@@ -61,7 +67,18 @@ public class CoveringPanel extends JFrame {
 		initGraphics(skipsLeft);
 		
 		if (skipsLeft > 0)
-			this.skip.addActionListener(new ButtonListerer(this));
+			this.skipButton.addActionListener(new ButtonListener(this, false));
+		else
+			this.skipButton.setEnabled(false);
+		
+		this.watchingMovieButton.addActionListener(new ButtonListener(this, true));
+		
+		this.exitButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.exit(0);
+			}
+		});
 	}
 	
 	private void initGraphics(int skipsLeft) {
@@ -92,9 +109,9 @@ public class CoveringPanel extends JFrame {
 		this.centeredPanel.setOpaque(false);
 		
 		SensibleListener listener = new SensibleListener(this);
-		this.centeredPanel.addMouseListener(listener);
-		this.centeredPanel.addKeyListener(listener);
-		this.centeredPanel.addMouseMotionListener(listener);
+		this.addMouseListener(listener);
+		this.addKeyListener(listener);
+		this.addMouseMotionListener(listener);
 		
 		JPanel textPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		textPanel.setOpaque(false);
@@ -106,22 +123,35 @@ public class CoveringPanel extends JFrame {
 		this.warningLabel.setLocation(0, 0);
 		textPanel.add(this.warningLabel);
 		
-		this.label = new JLabel(this.secondsToLive + " seconds...");
-		this.label.setFont(MSG_FONT);
-		this.label.setForeground(CoveringPanel.FG_TEXT);
-		this.label.setOpaque(false);
-		this.label.setSize(this.getSize().width, this.label.getSize().height);
-		this.label.setLocation(0, 0);
-		textPanel.add(this.label);
+		this.countdownLabel = new JLabel(this.secondsToLive + " seconds...");
+		this.countdownLabel.setFont(MSG_FONT);
+		this.countdownLabel.setForeground(CoveringPanel.FG_TEXT);
+		this.countdownLabel.setOpaque(false);
+		this.countdownLabel.setSize(this.getSize().width, this.countdownLabel.getSize().height);
+		this.countdownLabel.setLocation(0, 0);
+		textPanel.add(this.countdownLabel);
 		
 		JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		buttonsPanel.setOpaque(false);
 		
-		this.skip = Utils.createFlatButton("Skip (" + skipsLeft + " left)");
-		this.skip.setForeground(CoveringPanel.FG_TEXT);
-		this.skip.setOpaque(false);
-		this.skip.setLocation(0, 0);
-		buttonsPanel.add(this.skip);
+		
+		this.watchingMovieButton = Utils.createFlatButton("Watching a movie");
+		this.watchingMovieButton.setForeground(CoveringPanel.FG_TEXT);
+		this.watchingMovieButton.setOpaque(false);
+		this.watchingMovieButton.setLocation(0,0);
+		buttonsPanel.add(this.watchingMovieButton);
+		
+		this.skipButton = Utils.createFlatButton("Skip (" + skipsLeft + " left)");
+		this.skipButton.setForeground(CoveringPanel.FG_TEXT);
+		this.skipButton.setOpaque(false);
+		this.skipButton.setLocation(0, 0);
+		buttonsPanel.add(this.skipButton);
+		
+		this.exitButton = Utils.createFlatButton("Exit");
+		this.exitButton.setForeground(CoveringPanel.FG_TEXT);
+		this.exitButton.setOpaque(false);
+		this.exitButton.setLocation(0,0);
+		buttonsPanel.add(this.exitButton);
 		
 		JPanel aPanel = new JPanel(new GridBagLayout());
 		aPanel.setOpaque(false);
@@ -164,6 +194,12 @@ public class CoveringPanel extends JFrame {
 		this.targetSecond = 0; //ensures isDone returns always true
 	}
 	
+	public void watchMovie() {
+		this.skipped = true;
+		this.watchingMovie = true;
+		this.targetSecond = 0; //ensures isDone returns always true
+	}
+	
 	public void update() {
 		this.setLocation(new Point(0, 0));
 		this.updateText(getSecondsToLive());
@@ -173,8 +209,12 @@ public class CoveringPanel extends JFrame {
 			this.warningLabel.setText("");
 	}
 	
+	public boolean isWatchingAMovie() {
+		return this.watchingMovie;
+	}
+	
 	private void updateText(int seconds) {
-		this.label.setText(seconds + " seconds...");
+		this.countdownLabel.setText(seconds + " seconds...");
 		this.repaint();
 	}
 	
@@ -183,16 +223,21 @@ public class CoveringPanel extends JFrame {
 	}
 }
 
-class ButtonListerer implements ActionListener {
+class ButtonListener implements ActionListener {
 	private CoveringPanel coveringPanel;
+	private boolean watchingMovie;
 
-	public ButtonListerer(CoveringPanel pPanel) {
+	public ButtonListener(CoveringPanel pPanel, boolean pWatchingMovie) {
 		this.coveringPanel = pPanel;
+		this.watchingMovie = pWatchingMovie;
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		this.coveringPanel.skip();
+		if (this.watchingMovie)
+			this.coveringPanel.watchMovie();
+		else
+			this.coveringPanel.skip();
 	}
 }
 

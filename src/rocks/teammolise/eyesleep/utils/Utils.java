@@ -10,7 +10,6 @@ import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.IOException;
@@ -33,7 +32,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import com.jhlabs.image.GaussianFilter;
-import com.jhlabs.image.LensBlurFilter;
 
 public class Utils {
 	public static int timeInSeconds() {
