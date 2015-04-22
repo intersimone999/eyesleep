@@ -1,8 +1,10 @@
 package rocks.teammolise.eyesleep.config;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 
 public class ConfigManager {
@@ -10,7 +12,7 @@ public class ConfigManager {
 	public ConfigManager() throws IOException {
 		properties = new Properties();
 		
-		properties.load(new FileInputStream("config.properties"));
+		properties.load(new FileInputStream(new File("./config.properties")));
 	}
 	
 	public int getSleepTime() {

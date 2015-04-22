@@ -35,7 +35,7 @@ public class MyCallback implements TrayCallback {
 			ConfigManager config = new ConfigManager();
 			config.setStyle(pNewStyle);
 		} catch (IOException e) {
-			System.err.println("Unable to store config file");
+			System.err.println("Unable to store config file: " + e.getMessage());
 		}
 		
 		this.controller.setTray(pNewStyle);

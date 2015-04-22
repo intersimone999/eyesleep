@@ -42,24 +42,31 @@ public class Utils {
 		return timeInSeconds() / 60;
 	}
 
-	public static void playClip(String pName) {
-		try {
-			URL stream = Utils.class.getResource("resources/" + pName);
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(stream);
-			// Open audio clip and load samples from the audio input stream.
-			AudioFormat format = audioIn.getFormat();
-			DataLine.Info info = new DataLine.Info(Clip.class, format);
-			Clip clip = (Clip) AudioSystem.getLine(info);
-			clip.open(audioIn);
-			clip.start();
+	public static void playClip(final String pName) {
+		new Thread(new Runnable() {
+			public void run() {
+				try {
+					URL stream = Utils.class.getResource("resources/" + pName);
+					AudioInputStream audioIn = AudioSystem.getAudioInputStream(stream);
+					// Open audio clip and load samples from the audio input stream.
+					AudioFormat format = audioIn.getFormat();
+					DataLine.Info info = new DataLine.Info(Clip.class, format);
+					Clip clip = (Clip) AudioSystem.getLine(info);
+					clip.open(audioIn);
+					clip.start();
+					
+					while (clip.isRunning())
+						Thread.yield();
 
-		} catch (UnsupportedAudioFileException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (LineUnavailableException e) {
-			e.printStackTrace();
-		}
+				} catch (UnsupportedAudioFileException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (LineUnavailableException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 
 	public static Image loadImage(String path, String description) {
