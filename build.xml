@@ -55,6 +55,7 @@
 				<exclude name="*.java" />
 			</fileset>
 		</copy>
+		<copy file="config.properties" todir="osx/Eyesleep.app/Contents/Java" />
 <!-- 		to remove icon from the dock give this cmd in a terminal and then restart the app -->
 <!-- 		defaults write /Applications/Eyesleep.app/Contents/Info LSUIElement -string 1 -->
 	</target>
